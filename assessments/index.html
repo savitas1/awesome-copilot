@@ -1,0 +1,492 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Dashboard - awesome-copilot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e4e4e7;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #a1a1aa;
+            font-size: 1.1rem;
+        }
+        
+        .meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #71717a;
+        }
+        
+        .overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value.green { color: #00ff88; }
+        .stat-value.yellow { color: #ffd700; }
+        .stat-value.blue { color: #00d9ff; }
+        .stat-value.purple { color: #a855f7; }
+        
+        .stat-label {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .assessments {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+        
+        .assessment-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .assessment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .card-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-togaf { background: #00ff8820; color: #00ff88; }
+        .badge-cmmi { background: #00d9ff20; color: #00d9ff; }
+        .badge-tools { background: #a855f720; color: #a855f7; }
+        
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            position: relative;
+        }
+        
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            padding: 4px;
+            background: conic-gradient(var(--color) var(--percent), transparent var(--percent));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+        
+        .score-details {
+            flex: 1;
+        }
+        
+        .score-label {
+            font-size: 0.85rem;
+            color: #a1a1aa;
+            margin-bottom: 0.25rem;
+        }
+        
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .domain-scores {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .domain-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+        
+        .domain-name {
+            color: #a1a1aa;
+        }
+        
+        .domain-score {
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .card-footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .view-link {
+            color: #00d9ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .view-link:hover {
+            text-decoration: underline;
+        }
+        
+        .version {
+            font-size: 0.8rem;
+            color: #71717a;
+        }
+        
+        .gaps-section {
+            margin-top: 2rem;
+        }
+        
+        .gap-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 100, 100, 0.05);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .gap-priority {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .priority-high { background: #ff646420; color: #ff6464; }
+        .priority-medium { background: #ffd70020; color: #ffd700; }
+        .priority-low { background: #00ff8820; color: #00ff88; }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #71717a;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Assessment Dashboard</h1>
+            <p class="subtitle">awesome-copilot  Enterprise Maturity Analysis</p>
+            <div class="meta">
+                <span> December 19, 2025</span>
+                <span> Collection: awesome-copilot</span>
+                <span> Version: 1.0.0</span>
+            </div>
+        </header>
+        
+        <section class="overview">
+            <div class="stat-card">
+                <div class="stat-value green">2.50</div>
+                <div class="stat-label">TOGAF Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value blue">Level 2</div>
+                <div class="stat-label">CMMI Maturity</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value yellow">10/20</div>
+                <div class="stat-label">TOGAF Criteria</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value purple">15/30</div>
+                <div class="stat-label">CMMI Criteria</div>
+            </div>
+        </section>
+        
+        <section class="assessments">
+            <!-- TOGAF Card -->
+            <div class="assessment-card">
+                <div class="card-header">
+                    <h2 class="card-title">TOGAF Enterprise Architecture</h2>
+                    <span class="card-badge badge-togaf">Architecture</span>
+                </div>
+                
+                <div class="score-display">
+                    <div class="score-circle" style="--color: #00ff88; --percent: 50%;">
+                        2.50
+                    </div>
+                    <div class="score-details">
+                        <div class="score-label">Overall Score</div>
+                        <div class="score-text">10 of 20 criteria met</div>
+                    </div>
+                </div>
+                
+                <div class="domain-scores">
+                    <div class="domain-item">
+                        <span class="domain-name">Business</span>
+                        <span class="domain-score">2/5</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Data</span>
+                        <span class="domain-score">2/5</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Application</span>
+                        <span class="domain-score">2/5</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Technology</span>
+                        <span class="domain-score" style="color: #00ff88;">4/5</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 50%; background: linear-gradient(90deg, #00ff88, #00d9ff);"></div>
+                </div>
+                
+                <div class="card-footer">
+                    <a href="awesome-copilot/togaf-assessment.md" class="view-link">
+                        View Full Report 
+                    </a>
+                    <span class="version">v1.0.0</span>
+                </div>
+            </div>
+            
+            <!-- CMMI Card -->
+            <div class="assessment-card">
+                <div class="card-header">
+                    <h2 class="card-title">CMMI Process Maturity</h2>
+                    <span class="card-badge badge-cmmi">Process</span>
+                </div>
+                
+                <div class="score-display">
+                    <div class="score-circle" style="--color: #00d9ff; --percent: 50%;">
+                        L2
+                    </div>
+                    <div class="score-details">
+                        <div class="score-label">Maturity Level</div>
+                        <div class="score-text">Defined (Score: 2.50)</div>
+                    </div>
+                </div>
+                
+                <div class="domain-scores">
+                    <div class="domain-item">
+                        <span class="domain-name">Development</span>
+                        <span class="domain-score">3/5</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Services</span>
+                        <span class="domain-score" style="color: #ff6464;">1/5</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Supplier</span>
+                        <span class="domain-score">3/5</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">People</span>
+                        <span class="domain-score" style="color: #00ff88;">4/5</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Managing</span>
+                        <span class="domain-score">2/5</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Supporting</span>
+                        <span class="domain-score">2/5</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 50%; background: linear-gradient(90deg, #00d9ff, #a855f7);"></div>
+                </div>
+                
+                <div class="card-footer">
+                    <a href="awesome-copilot/cmmi-assessment.md" class="view-link">
+                        View Full Report 
+                    </a>
+                    <span class="version">v1.0.0</span>
+                </div>
+            </div>
+            
+            <!-- Tools Card -->
+            <div class="assessment-card">
+                <div class="card-header">
+                    <h2 class="card-title">Copilot Tools Recommendations</h2>
+                    <span class="card-badge badge-tools">Tools</span>
+                </div>
+                
+                <div class="score-display">
+                    <div class="score-circle" style="--color: #a855f7; --percent: 0%;">
+                        8
+                    </div>
+                    <div class="score-details">
+                        <div class="score-label">Recommended Tools</div>
+                        <div class="score-text">0 installed, 8 pending</div>
+                    </div>
+                </div>
+                
+                <div class="domain-scores">
+                    <div class="domain-item">
+                        <span class="domain-name">Agents</span>
+                        <span class="domain-score">3</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Prompts</span>
+                        <span class="domain-score">2</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Instructions</span>
+                        <span class="domain-score">3</span>
+                    </div>
+                    <div class="domain-item">
+                        <span class="domain-name">Installed</span>
+                        <span class="domain-score" style="color: #71717a;">0</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #a855f7, #ff6464);"></div>
+                </div>
+                
+                <div class="card-footer">
+                    <a href="awesome-copilot/copilot-tools-report.md" class="view-link">
+                        View Recommendations 
+                    </a>
+                    <span class="version">v1.0.0</span>
+                </div>
+            </div>
+        </section>
+        
+        <section class="gaps-section">
+            <h2 style="margin-bottom: 1rem; font-size: 1.3rem;"> Top Priority Gaps</h2>
+            <div class="gap-item">
+                <span class="gap-priority priority-high">HIGH</span>
+                <span>Add CODEOWNERS file (B3, P4)</span>
+            </div>
+            <div class="gap-item">
+                <span class="gap-priority priority-high">HIGH</span>
+                <span>Add test suite (D5)</span>
+            </div>
+            <div class="gap-item">
+                <span class="gap-priority priority-high">HIGH</span>
+                <span>Add dependabot.yml for security scanning (SM4)</span>
+            </div>
+            <div class="gap-item">
+                <span class="gap-priority priority-medium">MED</span>
+                <span>Create docs/adr/ for architecture decisions (A3)</span>
+            </div>
+            <div class="gap-item">
+                <span class="gap-priority priority-medium">MED</span>
+                <span>Add ROADMAP.md for project planning (M1)</span>
+            </div>
+        </section>
+        
+        <footer>
+            <p>Generated by awesome-copilot Assessment Tools</p>
+            <p style="margin-top: 0.5rem;">TOGAF 10  CMMI v2.0  GitHub Copilot</p>
+        </footer>
+    </div>
+</body>
+</html>
